@@ -14,33 +14,19 @@ It:
 - Is deployed on **AWS EC2**, served via **FastAPI**  
 - Has a **web frontend** hosted on **AWS S3**  
 
-## System Architecture (Mermaid Diagram)
+## System Architecture
 
 ```mermaid
 flowchart TD
-    subgraph User["User Browser"]
-        F[Frontend (HTML/JS on S3)]
-    end
+    A[User Browser] -->|HTTP POST /ask| B[Amazon S3 (Static Website)]
 
-    subgraph S3["Amazon S3 (Static Website)"]
-        F -->|HTTP POST /ask| B
-    end
+    B --> C[EC2 Instance (FastAPI Backend)]
+    C --> D[FAISS Vector Index]
+    C --> E[Amazon Bedrock (Claude 4.5 + Cohere Embed)]
 
-    subgraph EC2["EC2 Instance (FastAPI Backend)"]
-        B[FastAPI RAG API (Uvicorn :8000)]
-        FAI[FAISS Vector Index]
-        BED[Amazon Bedrock (Claude Sonnet 4.5 + Amazon Titan Text Embeddings v2)]
-        B -->|Retrieve + Embed| FAI
-        B -->|Generate Answer| BED
-    end
+    F[Extracted PDFs (Text + Tables + Figures)] --> G[JSON Chunks]
+    G --> D
 
-    subgraph LocalData["Local Data (Extracted PDFs)"]
-        PDF[Extracted CFR PDFs (Text + Tables + Figures)]
-        JSON[JSON Chunks (text/table/figure)]
-        FAISS[(FAISS Index vectors.faiss)]
-    end
-
-    PDF -->|parse_pdfs.py| JSON -->|build_faiss.py| FAISS
-    FAI --> B
-    BED --> B
+    C -->|Retrieve Context| D
+    C -->|Generate Answer| E
 ```
