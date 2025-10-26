@@ -1,0 +1,12 @@
+docs/
+__pycache__/
+outputs/
+py310_env/
+*.env
+*.pem
+*.pyc
+*.pyo
+*.pyd
+*.DS_Store
+*.pdf
+*.zip

@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CFR RAG System</title>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-light: #3b82f6;
+      --bg: #f8fafc;
+      --text: #1e293b;
+      --border: #e2e8f0;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Inter', system-ui, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 1rem;
+    }
+    h1 {
+      color: var(--primary);
+      font-size: 2rem;
+      margin-bottom: 0.25rem;
+    }
+    p {
+      color: #475569;
+      margin-top: 0;
+      margin-bottom: 1.5rem;
+      font-size: 1rem;
+      text-align: center;
+    }
+    .card {
+      background: white;
+      padding: 2rem;
+      border-radius: 1rem;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+      max-width: 700px;
+      width: 100%;
+    }
+    textarea {
+      width: 100%;
+      height: 120px;
+      padding: 1rem;
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      resize: none;
+      font-family: inherit;
+      font-size: 1rem;
+    }
+    button {
+      margin-top: 1rem;
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 0.5rem;
+      padding: 0.6rem 1.25rem;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background-color 0.2s ease, transform 0.1s ease;
+    }
+    button:hover {
+      background-color: var(--primary-light);
+      transform: translateY(-1px);
+    }
+    .answer {
+      margin-top: 1.5rem;
+      background: #f1f5f9;
+      border: 1px solid var(--border);
+      padding: 1rem;
+      border-radius: 0.75rem;
+      white-space: pre-wrap;
+      line-height: 1.5;
+    }
+    .contexts {
+      margin-top: 1rem;
+    }
+    .contexts ul {
+      list-style: none;
+      padding-left: 0;
+    }
+    .contexts li {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 0.5rem;
+      padding: 0.5rem 0.75rem;
+      margin-bottom: 0.5rem;
+      font-size: 0.9rem;
+    }
+    .pill {
+      background: #2563eb;
+      color: white;
+      border-radius: 999px;
+      padding: 0.1rem 0.6rem;
+      font-size: 0.75rem;
+      margin-right: 0.5rem;
+    }
+    #error {
+      color: #dc2626;
+      margin-top: 0.5rem;
+      text-align: center;
+    }
+    footer {
+      margin-top: 2rem;
+      font-size: 0.8rem;
+      color: #94a3b8;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>RAG Based QA System for CFR Documents</h1>
+    <p>Ask a question about your uploaded CFR documents.</p>
+
+    <textarea id="q" placeholder="e.g., Show the rated volumes for common brake chambers."></textarea>
+    <button id="ask">Ask</button>
+
+    <div id="out"></div>
+    <div id="error"></div>
+  </div>
+  <footer>© 2025 CFR RAG QA System | Powered by AWS Bedrock</footer>
+
+  <script>
+  document.getElementById("ask").onclick = async () => {
+    const q = document.getElementById("q").value.trim();
+    const out = document.getElementById("out");
+    const err = document.getElementById("error");
+    err.textContent = "";
+    out.innerHTML = "Thinking...";
+    try {
+      const r = await fetch("http://ec2-3-150-220-214.us-east-2.compute.amazonaws.com:8000/ask", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query: q, k: 8 })
+      });
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      const data = await r.json();
+      const { answer, contexts=[] } = data;
+      out.innerHTML = `
+        <div class="answer">${(answer || "No answer.").replaceAll("<","&lt;")}</div>
+        <div class="contexts">
+          <h3>Top Contexts</h3>
+          <ul>
+            ${contexts.map(c => `<li><span class="pill">${c.kind}</span>${c.doc_id} p.${c.page}</li>`).join("")}
+          </ul>
+        </div>`;
+    } catch(e) {
+      out.innerHTML = "";
+      err.textContent = "Error: " + e.message;
+    }
+  };
+  </script>
+</body>
+</html>
