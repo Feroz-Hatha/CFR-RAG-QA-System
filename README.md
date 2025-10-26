@@ -4,7 +4,7 @@
 
 ## Overview
 
-This project implements an end-to-end **RAG** system capable of answering queries about U.S. Federal Motor Vehicle Safety Standards (FMVSS) regulations contained in multi-column CFR PDF documents.
+This project implements an end-to-end **RAG** system capable of answering queries about U.S. Federal Motor Vehicle Safety Standards (FMVSS) regulations contained in multi-column CFR PDF documents. The deployed demo can be found [here](http://certbuddy-rag-ui.s3-website.us-east-2.amazonaws.com/).
 
 It:
 - Extracts **text, tables, and figures** from complex PDF layouts  
